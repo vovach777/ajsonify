@@ -47,7 +47,7 @@ async function * stringify( value, circular_protection_set ) {
             for (let i=0; i< value.length; i++) {
                if (i > 0)
                   yield ',';
-                  if (value[i] !== void 0) {
+               if (value[i] !== void 0) {
                   yield * stringify( value[i], circular_protection_set );
                } else {
                   yield 'null';
@@ -104,7 +104,7 @@ async function * stringify_pretty( value, cur, inc, circular_protection_set  ) {
             for (let i=0; i< value.length; i++) {
                if (i > 0)
                   yield ',\n'+' '.repeat(cur+inc);
-                  if (value[i] !== void 0) {
+               if (value[i] !== void 0) {
                   yield * stringify_pretty( value[i], cur+inc,inc, circular_protection_set );
                } else {
                   yield 'null';
