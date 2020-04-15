@@ -1,0 +1,8 @@
+{
+  "name": "ajsonify",
+  "version": "1.0.0",
+  "description": "Async strignigy",
+  "main": "index.js",
+  "author": "Vladimir Poslavskiy",
+  "license": "MIT"
+}
