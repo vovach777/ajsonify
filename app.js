@@ -1,7 +1,5 @@
 const { createJSONStream  } = require('./index');
 const fs = require('fs');
-const  { PassThrough } = require('stream');
-
 
 let o = {
    hello: 'world',
@@ -25,5 +23,3 @@ let out = fs.createWriteStream( __dirname + '/out.json', 'utf8');
 
 createJSONStream( very_big_array, null,3).pipe(out);
 createJSONStream( o,null,3).pipe(process.stdout);
-
-
