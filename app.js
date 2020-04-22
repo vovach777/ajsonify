@@ -23,6 +23,7 @@ very_big_array[10000000] = o;
 
 let out = fs.createWriteStream( __dirname + '/out.json', 'utf8');
 
-createJSONStream( very_big_array ,null,3).pipe(out);
+createJSONStream( very_big_array, null,3).pipe(out);
+createJSONStream( o,null,3).pipe(process.stdout);
 
 

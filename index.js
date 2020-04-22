@@ -138,69 +138,6 @@ async function * stringify_pretty( value, cur, inc, circular_protection_set  ) {
    }
 }
 
-
-
-module.exports.encodeJSONText = encodeJSONText;
-
-/*
-function * stringify_pretty_sync( value, cur, inc, circular_protection_set  ) {
-   switch (typeof value) {
-   case 'boolean':
-         yield value ? 'true' : 'false';
-         break;
-   case 'number':
-         yield String(value);
-         break;
-   case 'string':
-         yield `"${encodeJSONText(value)}"`
-         break;
-   case 'object':
-         if (value === null) {
-            yield 'null';
-            break;
-         }
-         if ((circular_protection_set) && (circular_protection_set.has(value))) {
-            yield 'null';
-            break;
-         }
-         if (circular_protection_set instanceof Set)
-            circular_protection_set.add(value);
-         else
-            circular_protection_set = new Set([value]);
-         if (Array.isArray(value)) {
-            yield '[\n'+' '.repeat(cur+inc);
-            for (let i=0; i< value.length; i++) {
-               if (i > 0)
-                  yield ',\n'+' '.repeat(cur+inc);
-               if (value[i] !== void 0) {
-                  yield * stringify_pretty_sync( value[i], cur+inc,inc, circular_protection_set );
-               } else {
-                  yield 'null';
-               }
-            }
-            yield '\n'+' '.repeat(cur)+']';
-         } else {
-            yield '{\n'+' '.repeat(cur+inc);
-               let count = 0;
-               for (let key in value) {
-                  let item = value[key];
-                  if (item !== void 0) {
-                  if (count++ > 0)
-                     yield ',\n'+' '.repeat(cur+inc);
-                  yield `"${encodeJSONText(key)}": `;
-                  yield * stringify_pretty_sync( item, cur+inc,inc, circular_protection_set);
-                  }
-               }
-            yield '\n'+' '.repeat(cur)+'}';
-         }
-         circular_protection_set.delete(value);
-         break;
-   default:
-      yield `"${encodeJSONText(String(value))}"`
-   }
-}
-module.exports.stringify_pretty_sync = stringify_pretty_sync;
-
 const { Readable } = require('stream');
 module.exports.JSONStream = (o,ignore,format=0) => Readable.from(  ((format|0)<=0 ? stringify(o) : stringify_pretty(o,0,format|0)) );
 
@@ -333,4 +270,3 @@ exports.createJSONStream = (o, ignore, spaces, timeoutValue=0, block_size=512) =
       }
    }
 }
-
