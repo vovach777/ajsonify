@@ -1,9 +1,8 @@
 # Node: Asynchronous version of JSON.stringify()
 
 ```node
-const { JSONStream } = require('./index');
+const { createJSONStream  } = require('ajsonify');
 const fs = require('fs');
-
 
 let o = {
    hello: 'world',
@@ -16,15 +15,17 @@ let o = {
    kav2: `"`,
    special: '\t\n\r'
 }
-
-// circular ref test
+//circular ref. protection test
 o.o = o;
 o.child.arr.push({...o});
 o.z = {...o.child}
 
+//test huge array
+let very_big_array = [];
+very_big_array[1000000] = o;
+
 let out = fs.createWriteStream( __dirname + '/out.json', 'utf8');
-
-JSONStream( o,null, 3 ).pipe( out );
-
-//or JSONStream( o ).pipe( out );
+console.time('stream');
+createJSONStream( very_big_array, null,2).pipe(out).on('close',()=>console.timeEnd('stream'));
+createJSONStream( o,null,3).pipe(process.stdout);
 ```
