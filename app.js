@@ -1,5 +1,6 @@
-const { JSONStream } = require('./index');
+const { createJSONStream  } = require('./index');
 const fs = require('fs');
+const  { PassThrough } = require('stream');
 
 
 let o = {
@@ -13,11 +14,15 @@ let o = {
    kav2: `"`,
    special: '\t\n\r'
 }
-// o.o = o;
-// o.child.arr.push({...o});
-// o.z = {...o.child}
+o.o = o;
+o.child.arr.push({...o});
+o.z = {...o.child}
+
+let very_big_array = [];
+very_big_array[10000000] = o;
 
 let out = fs.createWriteStream( __dirname + '/out.json', 'utf8');
 
-JSONStream( '\t\r\n',null, 2 ).pipe( out );
+createJSONStream( very_big_array ,null,3).pipe(out);
+
 
