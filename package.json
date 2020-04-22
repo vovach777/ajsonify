@@ -1,8 +1,15 @@
 {
   "name": "ajsonify",
   "version": "1.0.0",
-  "description": "Async strignigy",
+  "description": "Asynchronous version of JSON.stringify()",
+  "keywords" : ["json","json-stringify","json-strean","async"],
+  "homepage" : "https://github.com/vovach777/ajsonify",
+  "repository": "github:vovach777/ajsonify",
+  "bugs": {"url": "https://github.com/vovach777/ajsonify/issues",
+          "email": "vovach777@yandex.ru"},
   "main": "index.js",
   "author": "Vladimir Poslavskiy",
-  "license": "MIT"
+  "license": "MIT",
+  "files": ["index.js"],
+  "engines":{ "node" : ">=12.4.0" }
 }

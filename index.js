@@ -251,7 +251,7 @@ exports.createJSONStream = (o, ignore, spaces, timeoutValue=0, block_size=512) =
 
    let stream = new PassThrough();
    let gen = blockify_sync( prettify_sync(o,spaces), block_size );
-   gen_to_stream();
+   process.nextTick( gen_to_stream );
    return stream;
    function gen_to_stream() {
       try {
