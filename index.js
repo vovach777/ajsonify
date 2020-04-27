@@ -1,4 +1,4 @@
-const  { PassThrough } = require('stream');
+const  { PassThrough, Readable } = require('stream');
 
 function encodeJSONText(s) {
    let sb = '';
@@ -20,142 +20,23 @@ function encodeJSONText(s) {
    return sb;
 }
 
-/*
-async genetator was disabled
-node-13 memory leak.
-
-async function * stringify( value, circular_protection_set ) {
-   switch (typeof value) {
-   case 'boolean':
-         yield value ? 'true' : 'false';
-         break;
-   case 'number':
-         yield String(value);
-         break;
-   case 'string':
-         yield `"${encodeJSONText(value)}"`
-         break;
-   case 'object':
-         if (value === null) {
-            yield 'null';
-            break;
-         }
-         if ((circular_protection_set) && (circular_protection_set.has(value))) {
-            yield 'null';
-            break;
-         }
-         if (circular_protection_set instanceof Set)
-            circular_protection_set.add(value);
-         else
-            circular_protection_set = new Set([value]);
-         if (Array.isArray(value)) {
-            yield '[';
-            for (let i=0; i< value.length; i++) {
-               if (i > 0)
-                  yield ',';
-               if (value[i] !== void 0) {
-                  yield * stringify( value[i], circular_protection_set );
-               } else {
-                  yield 'null';
-               }
-            }
-            yield ']';
-         } else {
-            yield '{';
-               let count = 0;
-               for (let key in value) {
-                  let item = value[key];
-                  if (item !== void 0) {
-                  if (count++ > 0)
-                     yield ',';
-                  yield `"${encodeJSONText(key)}":`;
-                  yield * stringify( item, circular_protection_set );
-                  }
-               }
-            yield '}';
-         }
-         circular_protection_set.delete(value);
-         break;
-   default:
-      yield `"${encodeJSONText(String(value))}"`
-   }
-}
-
-async function * stringify_pretty( value, cur, inc, circular_protection_set  ) {
-   switch (typeof value) {
-   case 'boolean':
-         yield value ? 'true' : 'false';
-         break;
-   case 'number':
-         yield String(value);
-         break;
-   case 'string':
-         yield `"${encodeJSONText(value)}"`
-         break;
-   case 'object':
-         if (value === null) {
-            yield 'null';
-            break;
-         }
-         if ((circular_protection_set) && (circular_protection_set.has(value))) {
-            yield 'null';
-            break;
-         }
-         if (circular_protection_set instanceof Set)
-            circular_protection_set.add(value);
-         else
-            circular_protection_set = new Set([value]);
-         if (Array.isArray(value)) {
-            yield '[\n'+' '.repeat(cur+inc);
-            for (let i=0; i< value.length; i++) {
-               if (i > 0)
-                  yield ',\n'+' '.repeat(cur+inc);
-               if (value[i] !== void 0) {
-                  yield * stringify_pretty( value[i], cur+inc,inc, circular_protection_set );
-               } else {
-                  yield 'null';
-               }
-            }
-            yield '\n'+' '.repeat(cur)+']';
-         } else {
-            yield '{\n'+' '.repeat(cur+inc);
-               let count = 0;
-               for (let key in value) {
-                  let item = value[key];
-                  if (item !== void 0) {
-                  if (count++ > 0)
-                     yield ',\n'+' '.repeat(cur+inc);
-                  yield `"${encodeJSONText(key)}": `;
-                  yield * stringify_pretty( item, cur+inc,inc, circular_protection_set);
-                  }
-               }
-            yield '\n'+' '.repeat(cur)+'}';
-         }
-         circular_protection_set.delete(value);
-         break;
-   default:
-      yield `"${encodeJSONText(String(value))}"`
-   }
-}
-
-const { Readable } = require('stream');
-module.exports.JSONStream = (o,ignore,format=0) => Readable.from(  ((format|0)<=0 ? stringify(o) : stringify_pretty(o,0,format|0)) );
-
-*/
-
 function * blockify_sync( generator, size = 4096 ) {
-
    let buffer = '';
    for (let value of generator) {
      buffer += value;
-     if (buffer.length > size) {
-        yield buffer;
-        buffer = '';
+     while (buffer.length >= size) {
+        yield buffer.slice(0,size);
+        buffer = buffer.slice(size)
      }
    }
-   return buffer;
+   yield buffer;
 }
 
+function * bufferify_sync( generator ) {
+   for (let value of generator) {
+      yield Buffer.from(value);
+   }
+}
 
 function * stringify_sync( value, circular_protection_set ) {
    switch (typeof value) {
@@ -246,27 +127,14 @@ function * prettify_sync( value, spaces=0 ) {
 exports.stringify_g = stringify_sync;
 exports.prettify_g = prettify_sync;
 exports.blockify_g = blockify_sync;
+exports.bufferify_g = bufferify_sync;
 
-exports.createJSONStream = (o, ignore, spaces, timeoutValue=0, block_size=512) => {
-
-   let stream = new PassThrough();
-   let gen = blockify_sync( prettify_sync(o,spaces), block_size );
-   process.nextTick( gen_to_stream );
-   return stream;
-   function gen_to_stream() {
-      try {
-         let v = gen.next();
-         if (v.done)
-            stream.end(v.value);
-         else {
-            stream.write(v.value);
-            if (timeoutValue===0)
-               setImmediate( gen_to_stream  );
-            else
-               setTimeout( gen_to_stream,timeoutValue|0);
-         }
-      } catch(e) {
-         stream.destroy(e);
+exports.createJSONStream = (o, ignore, spaces, options, block_size) => {
+   if ((typeof options === 'number') &&
+      (typeof block_size !== 'number')) {
+         block_size = options;
+         options = void 0;
       }
-   }
+
+   return Readable.from( blockify_sync( prettify_sync(o,spaces), block_size ), options );
 }

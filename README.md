@@ -2,6 +2,11 @@
 
 ```node
 const { createJSONStream  } = require('ajsonify');
+
+/*
+   createJSONStream( <Object>, [null, [<spaces>, [[<readable options>], <block-size>]]]] ) : <stream>
+*/
+
 const fs = require('fs');
 
 let o = {
