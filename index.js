@@ -1,4 +1,4 @@
-const  { PassThrough, Readable } = require('stream');
+const  { Readable } = require('stream');
 
 function encodeJSONText(s) {
    let sb = '';
@@ -10,9 +10,9 @@ function encodeJSONText(s) {
          case 10: sb += '\\n'; break;
          case 12: sb += '\\f'; break;
          case 13: sb += '\\r'; break;
-         case '"'.charCodeAt(0):  sb += '\\"';  break;
-         case '\\'.charCodeAt(0): sb += '\\\\'; break;
-         case '/'.charCodeAt(0):  sb += '\\/';  break;
+         case 34: sb += '\\"'; break;
+         case 92: sb += '\\\\'; break;
+         case 47: sb += '\\/'; break;
          default:
             sb += ((cc >= 0x20) && (cc <= 0x7f)) ? s[i] : '\\u'+('000' + cc.toString(16)).slice(-4);
       }
@@ -58,7 +58,7 @@ function * stringify_sync( value, circular_protection_set ) {
             yield 'null';
             break;
          }
-         if (circular_protection_set instanceof Set)
+         if (circular_protection_set)
             circular_protection_set.add(value);
          else
             circular_protection_set = new Set([value]);
@@ -76,16 +76,16 @@ function * stringify_sync( value, circular_protection_set ) {
             yield ']';
          } else {
             yield '{';
-               let count = 0;
-               for (let key in value) {
-                  let item = value[key];
-                  if (item !== void 0) {
+            let count = 0;
+            for (let key in value) {
+               let item = value[key];
+               if (item !== void 0) {
                   if (count++ > 0)
                      yield ',';
                   yield `"${encodeJSONText(key)}":`;
                   yield * stringify_sync( item, circular_protection_set );
-                  }
                }
+            }
             yield '}';
          }
          circular_protection_set.delete(value);
