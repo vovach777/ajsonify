@@ -39,6 +39,15 @@ function * bufferify_sync( generator ) {
 }
 
 function * stringify_sync( value, circular_protection_set ) {
+   /* type unpacking first */
+   if (value instanceof String)
+      value = String(value);
+   else if (value instanceof Number)
+      value = Number(value);
+   else if (value instanceof Date)
+      value = value.toISOString();
+   else if (value instanceof Boolean)
+      value = Boolean(value);
    switch (typeof value) {
    case 'boolean':
          yield value ? 'true' : 'false';
@@ -54,6 +63,11 @@ function * stringify_sync( value, circular_protection_set ) {
             yield 'null';
             break;
          }
+         /*
+         if (typeof value.toJSON === 'function') {
+            yield value.toJSON()
+            break;
+         }*/
          if ((circular_protection_set) && (circular_protection_set.has(value))) {
             yield 'null';
             break;
@@ -82,7 +96,8 @@ function * stringify_sync( value, circular_protection_set ) {
                if (item !== void 0) {
                   if (count++ > 0)
                      yield ',';
-                  yield `"${encodeJSONText(key)}":`;
+                  yield `"${encodeJSONText(key)}"`;
+                  yield ':';
                   yield * stringify_sync( item, circular_protection_set );
                }
             }
@@ -116,6 +131,9 @@ function * prettify_sync( value, spaces=0 ) {
          case '}':
             cur -= spaces;
             yield '\n'+' '.repeat(cur)+elem;
+            break;
+         case ':':
+            yield ': ';
             break;
          default:
             yield elem;

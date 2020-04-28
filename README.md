@@ -1,13 +1,12 @@
 # Node: Asynchronous version of JSON.stringify()
 
 ```node
-const { createJSONStream  } = require('ajsonify');
+const { createJSONStream } = require('ajsonify');
+const { createWriteStream } = require('fs');
 
 /*
    createJSONStream( <Object>, [null, [<spaces>, [[<readable options>], <block-size>]]]] ) : <stream>
 */
-
-const fs = require('fs');
 
 let o = {
    hello: 'world',
@@ -18,19 +17,26 @@ let o = {
    rus2: '\\слеш \\ слеш \\ слеш \\ бэкслеш / бэкслеш /',
    kav1: `'`,
    kav2: `"`,
-   special: '\t\n\r'
+   special: '\t\n\r',
+   date: new Date(),
+   string: new String('string'),
+   number: new Number(123456),
+   boolean: new Boolean(false)
 }
 //circular ref. protection test
 o.o = o;
 o.child.arr.push({...o});
-o.z = {...o.child}
-
 //test huge array
 let very_big_array = [];
-very_big_array[1000000] = o;
+very_big_array[10000000] = o;
 
-let out = fs.createWriteStream( __dirname + '/out.json', 'utf8');
-console.time('stream');
-createJSONStream( very_big_array, null,2).pipe(out).on('close',()=>console.timeEnd('stream'));
-createJSONStream( o,null,3).pipe(process.stdout);
+let out = createWriteStream( __dirname + '/out.json', 'utf8');
+
+ console.time('stream');
+ createJSONStream( very_big_array, null,2).pipe(out).on('close',()=>{
+     console.timeEnd('stream');
+     createJSONStream( o,null,3).pipe(process.stdout);
+ });
+
+setInterval(()=>process.stdout.write('.'),1000).unref();
 ```

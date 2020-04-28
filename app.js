@@ -1,5 +1,5 @@
 const { createJSONStream } = require('./index');
-const fs = require('fs');
+const { createWriteStream } = require('fs');
 
 let o = {
    hello: 'world',
@@ -10,18 +10,20 @@ let o = {
    rus2: '\\слеш \\ слеш \\ слеш \\ бэкслеш / бэкслеш /',
    kav1: `'`,
    kav2: `"`,
-   special: '\t\n\r'
+   special: '\t\n\r',
+   date: new Date(),
+   string: new String('string'),
+   number: new Number(123456),
+   boolean: new Boolean(false)
 }
 //circular ref. protection test
 o.o = o;
 o.child.arr.push({...o});
-o.z = {...o.child}
-
 //test huge array
 let very_big_array = [];
 very_big_array[10000000] = o;
 
-let out = fs.createWriteStream( __dirname + '/out.json', 'utf8');
+let out = createWriteStream( __dirname + '/out.json', 'utf8');
 
  console.time('stream');
  createJSONStream( very_big_array, null,2).pipe(out).on('close',()=>{
