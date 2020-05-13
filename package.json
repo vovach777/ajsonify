@@ -1,6 +1,6 @@
 {
   "name": "ajsonify",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "Asynchronous version of JSON.stringify()",
   "keywords" : ["json","json-stringify","json-strean","async"],
   "homepage" : "https://github.com/vovach777/ajsonify",
